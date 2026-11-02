@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMTR2026秋 - 描画機能付き</title>
+    <title>TMTR2026秋</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -17,8 +17,8 @@
             -webkit-user-select: none;
             overflow: hidden;
             box-sizing: border-box;
-            padding-top: 8px;
-            padding-bottom: 8px;
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
         /* 横方向の3Dカルーセル用スタイリング */
         .carousel-viewport {
@@ -53,12 +53,16 @@
             transform: scale(1);
             z-index: 20;
         }
+        /* 前後のカードを薄くのぞかせる演出 */
+        .card-item-horizontal:not(.active-card) {
+            opacity: 0.35 !important;
+            filter: blur(1px);
+            pointer-events: none;
+        }
         /* 消しゴムカーソル指示器 */
         .eraser-cursor {
             pointer-events: none;
             position: fixed;
-            width: 32px;
-            height: 32px;
             box-sizing: border-box;
             border: 2px solid #ef4444;
             background-color: rgba(239, 68, 68, 0.15);
@@ -125,7 +129,7 @@
     </div>
 
     <!-- ヘッダー -->
-    <header class="w-full bg-white border-b border-slate-100 px-3 py-2 flex items-center justify-between shrink-0 shadow-sm z-40 gap-2 relative">
+    <header class="w-full bg-white border-b border-slate-100 px-3 py-1.5 flex items-center justify-between shrink-0 shadow-sm z-40 gap-2 relative max-w-6xl mx-auto rounded-b-2xl">
         <div class="flex items-center gap-2">
             <button id="view-toggle-btn" class="bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold py-1.5 px-3 rounded-full flex items-center gap-1.5 transition-colors border border-slate-200 shadow-sm">
                 <i id="toggle-icon" class="fa-solid fa-border-all"></i>
@@ -134,51 +138,69 @@
             <span id="header-user-info" class="text-xs font-semibold text-slate-700 hidden md:inline"></span>
         </div>
         
-        <!-- 中央: 描画モード切替＆描画ツールバー (一覧表示時は非表示) -->
-        <div id="draw-mode-container" class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-full border border-slate-200 shadow-inner">
-            <!-- 描画モード スイッチ（アイコンのみ） -->
-            <button id="draw-mode-toggle-btn" class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all bg-white text-slate-600 shadow-sm" title="描画モード: OFF">
-                <i class="fa-solid fa-pen-nib"></i>
+        <!-- 中央: 描画モード切替＆描画ツールバー -->
+        <div id="draw-mode-container" class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 shadow-inner">
+            <!-- 描画モード スイッチ -->
+            <button id="draw-mode-toggle-btn" class="w-9 h-9 rounded-full text-xs font-bold flex items-center justify-center transition-all bg-white text-slate-600 shadow-sm shrink-0" title="描画モード: OFF">
+                <i class="fa-solid fa-pen-nib text-sm"></i>
             </button>
 
-            <!-- 描画ツール群 (描画ON時のみ有効化表示) -->
-            <div id="drawing-tools" class="flex items-center gap-1 pl-1 border-l border-slate-300 opacity-40 pointer-events-none transition-opacity">
-                <!-- ペン色選択 -->
-                <button class="color-btn w-6 h-6 rounded-full bg-red-500 border-2 border-white shadow-sm transition-transform ring-2 ring-indigo-500 scale-110" data-color="#ef4444" title="赤ペン"></button>
-                <button class="color-btn w-6 h-6 rounded-full bg-blue-500 border-2 border-white shadow-sm transition-transform" data-color="#3b82f6" title="青ペン"></button>
-                <button class="color-btn w-6 h-6 rounded-full bg-slate-900 border-2 border-white shadow-sm transition-transform" data-color="#1e293b" title="黒ペン"></button>
-                
-                <!-- 消しゴム -->
-                <button id="eraser-btn" class="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs transition-transform" title="消しゴム">
-                    <i class="fa-solid fa-eraser"></i>
-                </button>
-                <!-- ひとつ戻る -->
-                <button id="undo-drawing-btn" class="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs transition-transform" title="ひとつ戻る">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </button>
+            <!-- 描画ツール群 -->
+            <div class="max-w-[160px] sm:max-w-none overflow-x-auto overflow-y-hidden flex items-center px-1 py-0.5 scrollbar-none">
+                <div id="drawing-tools" class="flex items-center gap-1.5 opacity-40 pointer-events-none transition-opacity shrink-0">
+                    <!-- ペン色選択 -->
+                    <button class="color-btn w-5 h-5 rounded-full bg-red-500 border-2 border-white shadow-sm transition-transform ring-offset-1 shrink-0" data-color="#ef4444" title="赤ペン"></button>
+                    <button class="color-btn w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-sm transition-transform ring-offset-1 shrink-0" data-color="#3b82f6" title="青ペン"></button>
+                    <button class="color-btn w-5 h-5 rounded-full bg-slate-900 border-2 border-white shadow-sm transition-transform ring-offset-1 shrink-0" data-color="#1e293b" title="黒ペン"></button>
+                    
+                    <!-- 消しゴム -->
+                    <button id="eraser-btn" class="w-5 h-5 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] transition-transform shrink-0" title="消しゴム">
+                        <i class="fa-solid fa-eraser text-[10px]"></i>
+                    </button>
 
-                <div class="h-4 w-px bg-slate-300 mx-0.5"></div>
+                    <div class="h-3.5 w-px bg-slate-300 mx-0.5 shrink-0"></div>
 
-                <!-- 表示 / 非表示 切替 -->
-                <button id="visibility-toggle-btn" class="w-6 h-6 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-xs" title="描画を表示/非表示">
-                    <i id="visibility-icon" class="fa-solid fa-eye"></i>
-                </button>
+                    <!-- 線の太さ選択 -->
+                    <div class="flex items-center gap-1 bg-slate-200/60 p-0.5 rounded-full shrink-0">
+                        <button class="size-btn w-4 h-4 rounded-full flex items-center justify-center transition-transform" data-size="small" title="細い">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
+                        </button>
+                        <button class="size-btn w-4 h-4 rounded-full flex items-center justify-center transition-transform" data-size="medium" title="普通">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                        </button>
+                        <button class="size-btn w-4 h-4 rounded-full flex items-center justify-center transition-transform" data-size="large" title="太い">
+                            <span class="w-3.5 h-3.5 rounded-full bg-slate-700"></span>
+                        </button>
+                    </div>
 
-                <!-- 全消去 -->
-                <button id="clear-canvas-btn" class="w-6 h-6 rounded-full bg-rose-100 hover:bg-rose-200 text-rose-600 flex items-center justify-center text-xs" title="現在の描画を全消去">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
+                    <div class="h-3.5 w-px bg-slate-300 mx-0.5 shrink-0"></div>
+
+                    <!-- ひとつ戻る -->
+                    <button id="undo-drawing-btn" class="w-5 h-5 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] transition-transform shrink-0" title="ひとつ戻る">
+                        <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                    </button>
+
+                    <!-- 表示 / 非表示 切替 -->
+                    <button id="visibility-toggle-btn" class="w-5 h-5 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center text-[10px] shrink-0" title="描画を表示/非表示">
+                        <i id="visibility-icon" class="fa-solid fa-eye text-[10px]"></i>
+                    </button>
+
+                    <!-- 全消去 -->
+                    <button id="clear-canvas-btn" class="w-5 h-5 rounded-full bg-rose-100 hover:bg-rose-200 text-rose-600 flex items-center justify-center text-[10px] shrink-0" title="現在の描画を全消去">
+                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- 30分タイマー & 提出 -->
+        <!-- タイマー & 提出 -->
         <div class="flex items-center gap-2">
-            <div id="timer-container" class="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full text-amber-700 font-bold text-xs shadow-inner">
+            <div id="timer-container" class="flex items-center justify-center gap-1 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full text-amber-700 font-bold text-xs shadow-inner w-[76px] shrink-0">
                 <i class="fa-regular fa-clock"></i>
                 <span id="countdown-timer">30:00</span>
             </div>
 
-            <button id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 px-3 rounded-full text-xs shadow-md transition-all active:scale-95 flex items-center gap-1 shrink-0">
+            <button id="submit-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-full text-xs md:text-sm shadow-md transition-all active:scale-95 flex items-center gap-1.5 shrink-0">
                 <span>提出</span>
                 <i class="fa-solid fa-chevron-right text-[10px]"></i>
             </button>
@@ -186,18 +208,17 @@
     </header>
 
     <!-- メインビューポート -->
-    <main class="flex-1 relative flex flex-col items-center justify-center overflow-hidden p-2">
+    <main class="flex-1 relative flex flex-col items-center justify-center overflow-hidden p-2 max-w-5xl mx-auto w-full">
         <!-- インジケータードット -->
         <div id="indicators" class="flex items-center gap-1.5 mb-1 shrink-0 z-30"></div>
 
         <!-- スライダー / グリッドコンテナ -->
-        <div id="viewport-container" class="carousel-viewport w-full max-w-3xl flex-1 relative overflow-hidden rounded-2xl flex items-center justify-center">
-            
+        <div id="viewport-container" class="carousel-viewport w-full max-w-3xl flex-1 relative overflow-hidden rounded-2xl flex items-center justify-center my-auto">
             <!-- 横型3Dカルーセルスライダー -->
             <div id="cards-wrapper" class="card-carousel-horizontal absolute inset-0 items-center justify-start"></div>
 
             <!-- グリッド一覧表示ビュー（初期非表示） -->
-            <div id="grid-wrapper" class="absolute inset-0 bg-slate-50/95 backdrop-blur-md p-4 overflow-y-auto hidden z-30 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+            <div id="grid-wrapper" class="absolute inset-0 bg-slate-50/95 backdrop-blur-md p-4 pb-12 overflow-y-auto hidden z-30 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
         </div>
 
         <!-- 解答入力セクション -->
@@ -236,14 +257,22 @@
         const transformStates = {};
 
         // 描画関連の状態変数
-        let isDrawMode = false; // 全問題共通の描画モードスイッチ（初期値OFF）
-        let currentTool = 'pen'; // 'pen' | 'eraser'
-        let currentColor = '#ef4444'; // 初期ペン色: 赤
-        const ERASER_SIZE = 32; // ピクセル消しゴムの直径 (px)
-        const canvasContexts = {}; // 問題IDごとのキャンバスコンテキスト
-        const drawingHistory = {}; // 問題IDごとのUndo履歴
+        let isDrawMode = false;
+        let currentTool = 'pen';
+        let currentColor = '#ef4444'; // 100%不透明のカラー
+        
+        // 太さプリセット（ペン用・消しゴム用）
+        const SIZE_PRESETS = {
+            small: { pen: 2, eraser: 16 },
+            medium: { pen: 4, eraser: 32 },
+            large: { pen: 8, eraser: 48 }
+        };
+        let currentSizeKey = 'medium';
+
+        const canvasContexts = {};
+        const drawingHistory = {};
         const MAX_UNDO_STEPS = 30;
-        const drawingStore = {};   // 問題IDごとの描画状態 { visible: true } （実際の描画はHTML5 Canvasのピクセルデータとして保持）
+        const drawingStore = {};
 
         puzzleData.forEach(data => {
             savedAnswers[data.id] = '';
@@ -282,8 +311,8 @@
 
         // 描画コントロール用エレメント
         const drawModeToggleBtn = document.getElementById('draw-mode-toggle-btn');
-        const drawingTools = document.getElementById('drawing-tools');
         const colorBtns = document.querySelectorAll('.color-btn');
+        const sizeBtns = document.querySelectorAll('.size-btn');
         const eraserBtn = document.getElementById('eraser-btn');
         const undoDrawingBtn = document.getElementById('undo-drawing-btn');
         const timerContainer = document.getElementById('timer-container');
@@ -330,7 +359,7 @@
             startCountdown();
         });
 
-        // カルーセル用カード生成 (横スクロール対応)
+        // カルーセル用カード生成 (4:3の画像ボックス)
         puzzleData.forEach((data, idx) => {
             const dot = document.createElement('div');
             dot.className = `w-2 h-2 rounded-full transition-all cursor-pointer ${idx === 0 ? 'bg-indigo-600 w-4' : 'bg-slate-300'}`;
@@ -350,8 +379,8 @@
                 </div>
                 <div class="w-full max-w-2xl flex-1 rounded-2xl bg-white flex flex-col justify-between items-center border border-slate-100 p-2 overflow-hidden relative shadow-sm" id="card-inner-${data.id}">
                     <button type="button" id="reset-zoom-${data.id}" class="absolute top-3 right-3 bg-slate-900/70 hover:bg-slate-900 text-white text-[10px] px-2.5 py-1 rounded-full shadow-md z-30 hidden transition-all" onclick="window.resetZoomInstance('${data.id}')">元に戻す</button>
-                    <div class="w-full h-full relative flex items-center justify-center overflow-hidden image-wrapper-box" id="img-wrapper-${data.id}">
-                        <div id="transform-target-${data.id}" class="relative max-w-full max-h-full flex items-center justify-center transition-transform duration-75 origin-center">
+                    <div class="w-full aspect-[4/3] relative flex items-center justify-center overflow-hidden image-wrapper-box my-auto" id="img-wrapper-${data.id}">
+                        <div id="transform-target-${data.id}" class="relative w-full h-full flex items-center justify-center transition-transform duration-75 origin-center">
                             <img src="${data.src}" onerror="this.src='${data.fallback}'" class="max-w-full max-h-full object-contain select-none pointer-events-none" id="img-${data.id}" alt="${data.title}">
                             <canvas id="canvas-${data.id}" class="absolute inset-0 w-full h-full pointer-events-auto" style="touch-action: none;"></canvas>
                         </div>
@@ -394,7 +423,6 @@
             gridWrapper.appendChild(gridCard);
         });
 
-        // 描画状態をUndo履歴へ保存（1ストローク／1回の消しゴム操作を1単位とする）
         function saveDrawingState(id) {
             const canvas = document.getElementById(`canvas-${id}`);
             if (!canvas) return;
@@ -429,7 +457,13 @@
             showToast('ひとつ前の描画に戻しました');
         }
 
-        // キャンバスおよびピクセル消しゴムのセットアップ
+        function updateEraserCursorSize() {
+            const eraserSize = SIZE_PRESETS[currentSizeKey].eraser;
+            eraserCursor.style.width = `${eraserSize}px`;
+            eraserCursor.style.height = `${eraserSize}px`;
+        }
+
+        // キャンバスおよび描画設定
         function setupDrawingCanvas(id) {
             const canvas = document.getElementById(`canvas-${id}`);
             const ctx = canvas.getContext('2d');
@@ -443,7 +477,6 @@
                 const rect = canvas.getBoundingClientRect();
                 if (rect.width > 0 && rect.height > 0) {
                     if (canvas.width !== Math.floor(rect.width) || canvas.height !== Math.floor(rect.height)) {
-                        // 既存の描画ピクセルを保持しながらサイズ変更
                         const tempCanvas = document.createElement('canvas');
                         tempCanvas.width = canvas.width;
                         tempCanvas.height = canvas.height;
@@ -464,13 +497,11 @@
             window.addEventListener('resize', resizeCanvas);
             setTimeout(resizeCanvas, 100);
 
-            // 拡大時にもペンの太さが変わらないよう、キャンバス上のローカル座標へ正確に変換
             function getCanvasCoordinates(e) {
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
                 const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
 
-                // CSS表示上のオフセットを現在のスケールで割ってキャンバス内部ピクセル座標に合わせる
                 const x = (clientX - rect.left) * (canvas.width / rect.width);
                 const y = (clientY - rect.top) * (canvas.height / rect.height);
                 return { x, y };
@@ -478,6 +509,12 @@
 
             canvas.addEventListener('pointerdown', (e) => {
                 if (!isDrawMode) return;
+                if (e.pointerType === 'touch' && !e.isPrimary) {
+                    isDrawing = false;
+                    eraserCursor.style.display = 'none';
+                    return;
+                }
+                
                 saveDrawingState(id);
                 isDrawing = true;
                 try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
@@ -486,15 +523,26 @@
                 lastY = coords.y;
 
                 if (currentTool === 'eraser') {
+                    updateEraserCursorSize();
                     eraserCursor.style.display = 'block';
                     eraserCursor.style.left = `${e.clientX}px`;
                     eraserCursor.style.top = `${e.clientY}px`;
                     erasePixels(ctx, lastX, lastY);
+                } else {
+                    ctx.globalAlpha = 1.0;
                 }
             });
 
             canvas.addEventListener('pointermove', (e) => {
                 if (!isDrawMode) return;
+                if (e.pointerType === 'touch' && !e.isPrimary) {
+                    if (isDrawing) {
+                        isDrawing = false;
+                        eraserCursor.style.display = 'none';
+                    }
+                    return;
+                }
+
                 if (currentTool === 'eraser') {
                     eraserCursor.style.left = `${e.clientX}px`;
                     eraserCursor.style.top = `${e.clientY}px`;
@@ -505,8 +553,9 @@
 
                 if (currentTool === 'pen') {
                     ctx.save();
-                    ctx.strokeStyle = currentColor;
-                    ctx.lineWidth = 3; // 常に一定の太さ
+                    ctx.strokeStyle = currentColor; // 100%不透明のカラー
+                    ctx.globalAlpha = 1.0; // 不透明度100%
+                    ctx.lineWidth = SIZE_PRESETS[currentSizeKey].pen;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
                     ctx.beginPath();
@@ -529,18 +578,16 @@
             };
 
             canvas.addEventListener('pointerup', stopDrawing);
-            canvas.addEventListener('pointerleave', () => {
-                stopDrawing();
-                eraserCursor.style.display = 'none';
-            });
+            canvas.addEventListener('pointercancel', stopDrawing);
+            canvas.addEventListener('lostpointercapture', stopDrawing);
         }
 
         function erasePixels(ctx, x, y) {
             ctx.save();
             ctx.beginPath();
-            // ピクセル単位で綺麗に削るため destination-out を利用
             ctx.globalCompositeOperation = 'destination-out';
-            ctx.arc(x, y, ERASER_SIZE / 2, 0, Math.PI * 2, false);
+            const eraserRadius = SIZE_PRESETS[currentSizeKey].eraser / 2;
+            ctx.arc(x, y, eraserRadius, 0, Math.PI * 2, false);
             ctx.fill();
             ctx.restore();
         }
@@ -561,15 +608,15 @@
             }
         }
 
-        // 描画モード切替（アイコンのみ・全問題で変更が反映される）
         drawModeToggleBtn.addEventListener('click', () => {
             isDrawMode = !isDrawMode;
+            const drawingTools = document.getElementById('drawing-tools');
             if (isDrawMode) {
-                drawModeToggleBtn.className = 'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all bg-indigo-600 text-white shadow-sm';
+                drawModeToggleBtn.className = 'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all bg-indigo-600 text-white shadow-sm shrink-0';
                 drawModeToggleBtn.title = '描画モード: ON';
                 drawingTools.classList.remove('opacity-40', 'pointer-events-none');
             } else {
-                drawModeToggleBtn.className = 'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all bg-white text-slate-600 shadow-sm';
+                drawModeToggleBtn.className = 'w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center transition-all bg-white text-slate-600 shadow-sm shrink-0';
                 drawModeToggleBtn.title = '描画モード: OFF';
                 drawingTools.classList.add('opacity-40', 'pointer-events-none');
                 eraserCursor.style.display = 'none';
@@ -580,31 +627,59 @@
         colorBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 currentTool = 'pen';
-                currentColor = btn.dataset.color;
-                colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-indigo-500', 'scale-110'));
-                btn.classList.add('ring-2', 'ring-indigo-500', 'scale-110');
-                eraserBtn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-100');
+                currentColor = btn.dataset.color; // 完全不透明なHEXカラーコードを設定
+
+                colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'scale-110'));
+                btn.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'scale-110');
+                eraserBtn.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'bg-indigo-100');
             });
         });
+        
+        if (colorBtns.length > 0) {
+            colorBtns[0].classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'scale-110');
+        }
 
-        // 消しゴム選択
+        // 線の太さ選択のイベントハンドラ
+        function updateSizeUI() {
+            sizeBtns.forEach(btn => {
+                const key = btn.dataset.size;
+                const dot = btn.querySelector('span');
+                if (key === currentSizeKey) {
+                    btn.classList.add('bg-white', 'shadow-sm');
+                    dot.classList.remove('bg-slate-700');
+                    dot.classList.add('bg-indigo-600');
+                } else {
+                    btn.classList.remove('bg-white', 'shadow-sm');
+                    dot.classList.remove('bg-indigo-600');
+                    dot.classList.add('bg-slate-700');
+                }
+            });
+            updateEraserCursorSize();
+        }
+
+        sizeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentSizeKey = btn.dataset.size;
+                updateSizeUI();
+            });
+        });
+        updateSizeUI();
+
         eraserBtn.addEventListener('click', () => {
             currentTool = 'eraser';
-            colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-indigo-500', 'scale-110'));
-            eraserBtn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-100');
+            colorBtns.forEach(b => b.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'scale-110'));
+            eraserBtn.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'bg-indigo-100');
+            updateEraserCursorSize();
         });
 
-        // ひとつ戻る
         undoDrawingBtn.addEventListener('click', undoDrawing);
 
-        // 表示/非表示切替
         visibilityToggleBtn.addEventListener('click', () => {
             const currentId = puzzleData[currentIndex].id;
             drawingStore[currentId].visible = !drawingStore[currentId].visible;
             updateVisibilityUI();
         });
 
-        // 全消去：現在表示中の問題のキャンバスを即時クリアする
         clearCanvasBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -618,10 +693,8 @@
                 return;
             }
 
-            // 全消去もUndoできるよう、消去前の状態を保存する
             saveDrawingState(currentId);
 
-            // キャンバス全体を消去し、消去前の合成モード等も初期化する
             ctx.save();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.globalCompositeOperation = 'source-over';
@@ -669,13 +742,15 @@
             isGridView = !isGridView;
 
             const drawModeContainer = document.getElementById('draw-mode-container');
+            const timerContainer = document.getElementById('timer-container');
+            const submitBtn = document.getElementById('submit-btn');
 
             if (isGridView) {
                 gridWrapper.classList.remove('hidden');
                 cardsWrapper.classList.add('hidden');
                 indicators.classList.add('hidden');
                 answerSection.classList.add('hidden');
-                drawModeContainer.classList.add('hidden'); // 一覧表示時は描画ツールを非表示
+                drawModeContainer.classList.add('hidden');
                 timerContainer.classList.add('absolute', 'left-1/2', '-translate-x-1/2');
                 toggleIcon.className = 'fa-solid fa-clone';
                 toggleText.innerText = '個別表示';
@@ -684,11 +759,15 @@
                 cardsWrapper.classList.remove('hidden');
                 indicators.classList.remove('hidden');
                 answerSection.classList.remove('hidden');
-                drawModeContainer.classList.remove('hidden'); // 個別表示時に再表示
+                drawModeContainer.classList.remove('hidden');
                 timerContainer.classList.remove('absolute', 'left-1/2', '-translate-x-1/2');
                 toggleIcon.className = 'fa-solid fa-border-all';
                 toggleText.innerText = '一覧表示';
                 updateCarousel();
+            }
+            
+            if (submitBtn) {
+                submitBtn.classList.remove('hidden');
             }
         }
 
@@ -703,7 +782,6 @@
 
             function updateTransform() {
                 const state = transformStates[id];
-                // パン操作中の遅延補間を無効化し、ポインター位置へ即時追従させる
                 transformTarget.style.transition = 'none';
                 
                 const maxPanX = Math.max(0, (wrapper.clientWidth * (state.scale - 1)) / 2);
@@ -729,9 +807,8 @@
             };
 
             wrapper.addEventListener('pointerdown', (e) => {
-                if (isDrawMode) return; // 描画モード時は移動無効
                 const state = transformStates[id];
-                if (state.scale > 1.02) {
+                if (state.scale > 1.02 && e.pointerType !== 'touch') {
                     isPanning = true;
                     try { wrapper.setPointerCapture(e.pointerId); } catch (_) {}
                     startPanX = e.clientX - state.panX;
@@ -740,9 +817,8 @@
             });
 
             wrapper.addEventListener('pointermove', (e) => {
-                if (isDrawMode) return;
                 const state = transformStates[id];
-                if (isPanning && state.scale > 1.02) {
+                if (isPanning && state.scale > 1.02 && e.pointerType !== 'touch') {
                     state.panX = e.clientX - startPanX;
                     state.panY = e.clientY - startPanY;
                     updateTransform();
@@ -754,7 +830,6 @@
             wrapper.addEventListener('lostpointercapture', () => { isPanning = false; });
 
             wrapper.addEventListener('wheel', (e) => {
-                if (isDrawMode) return; // 描画モード時はズーム無効
                 e.preventDefault();
                 const state = transformStates[id];
                 const zoomFactor = 1.15;
@@ -771,37 +846,59 @@
             }, { passive: false });
 
             let initialPinchDistance = null;
+            let initialScale = 1;
+            let initialTouchCenter = { x: 0, y: 0 };
+            let initialPan = { x: 0, y: 0 };
+
             wrapper.addEventListener('touchstart', (e) => {
-                if (isDrawMode) return;
                 if (e.touches.length === 2) {
                     initialPinchDistance = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
+                    const state = transformStates[id];
+                    initialScale = state.scale;
+                    initialPan = { x: state.panX, y: state.panY };
+                    initialTouchCenter = {
+                        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                        y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                    };
                 }
             }, { passive: true });
 
             wrapper.addEventListener('touchmove', (e) => {
-                if (isDrawMode) return;
                 if (e.touches.length === 2 && initialPinchDistance !== null) {
-                    const dist = Math.hypot(
+                    const currentDist = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
+                    const currentCenter = {
+                        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                        y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+                    };
+
                     const state = transformStates[id];
-                    const factor = dist / initialPinchDistance;
-                    state.scale = Math.min(Math.max(state.scale * (factor > 1 ? 1.05 : 0.95), 1.0), 4.0);
+                    const scaleFactor = currentDist / initialPinchDistance;
+                    state.scale = Math.min(Math.max(initialScale * scaleFactor, 1.0), 4.0);
+
+                    const deltaX = currentCenter.x - initialTouchCenter.x;
+                    const deltaY = currentCenter.y - initialTouchCenter.y;
+                    state.panX = initialPan.x + deltaX;
+                    state.panY = initialPan.y + deltaY;
+
                     if (state.scale <= 1.0) {
                         state.panX = 0;
                         state.panY = 0;
                     }
-                    initialPinchDistance = dist;
+
                     updateTransform();
                 }
             }, { passive: true });
 
-            wrapper.addEventListener('touchend', () => {
-                initialPinchDistance = null;
+            wrapper.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) {
+                    initialPinchDistance = null;
+                }
             }, { passive: true });
         }
 
@@ -828,17 +925,17 @@
             }
         });
 
-        // 横スワイプ問題切替（描画モードOFF時のみ動作）
         let touchStartX = 0;
         let touchEndX = 0;
 
         cardsWrapper.addEventListener('touchstart', (e) => {
-            if (isDrawMode) return; // 描画モードON時は他問題へのスクロール禁止
+            if (isDrawMode) return;
+            if (e.touches.length > 1) return;
 
             const currentId = puzzleData[currentIndex].id;
             const currentScale = transformStates[currentId]?.scale || 1;
 
-            if (currentScale <= 1.05 && e.touches.length === 1) {
+            if (currentScale <= 1.05) {
                 touchStartX = e.changedTouches[0].clientX;
             } else {
                 touchStartX = 0;
@@ -846,12 +943,13 @@
         }, { passive: true });
 
         cardsWrapper.addEventListener('touchend', (e) => {
-            if (isDrawMode) return; // 描画モードON時は他問題へのスクロール禁止
+            if (isDrawMode) return;
+            if (e.changedTouches.length > 1) return;
 
             const currentId = puzzleData[currentIndex].id;
             const currentScale = transformStates[currentId]?.scale || 1;
 
-            if (currentScale <= 1.05 && touchStartX !== 0 && e.changedTouches.length === 1) {
+            if (currentScale <= 1.05 && touchStartX !== 0) {
                 touchEndX = e.changedTouches[0].clientX;
                 if (touchEndX < touchStartX - 40) {
                     if (currentIndex < puzzleData.length - 1) {
@@ -921,10 +1019,10 @@
 
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-50');
-            showToast(`(${submissionCount}/${MAX_SUBMISSIONS}) データを送信中...`);
+            showToast(`(${submissionCount}/${MAX_SUBMISSIONS}) スプレッドシートへデータを送信中...`);
 
             try {
-                if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== 'https://script.google.com/macros/u/2/s/AKfycbyi6J6XeaJYv7D_H-0Lgv6q3J_1WxtJfeJWdFAlS9WVH_QbtWod6XZFPUws0gXljDdntQ/exec](https://script.google.com/macros/u/2/s/AKfycbyi6J6XeaJYv7D_H-0Lgv6q3J_1WxtJfeJWdFAlS9WVH_QbtWod6XZFPUws0gXljDdntQ/exec') {
+                if (GAS_WEB_APP_URL && GAS_WEB_APP_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
                     await fetch(GAS_WEB_APP_URL, {
                         method: 'POST',
                         mode: 'no-cors',
@@ -932,13 +1030,13 @@
                         body: JSON.stringify(submissionData)
                     });
                 } else {
-                    console.log('提出データ:', submissionData);
+                    console.log('提出データ送信 (ダミー):', submissionData);
                 }
 
-                showToast(`${currentUser.name} さん (${submissionCount}回目) の解答を提出しました！`);
+                showToast(`${currentUser.name} さん (${submissionCount}回目) の解答をスプレッドシートに記録しました！`);
             } catch (err) {
                 console.error(err);
-                showToast('送信に失敗しました。');
+                showToast('スプレッドシートへの送信に失敗しました。');
             } finally {
                 if (submissionCount < MAX_SUBMISSIONS && !isTimeUp) {
                     submitBtn.disabled = false;
